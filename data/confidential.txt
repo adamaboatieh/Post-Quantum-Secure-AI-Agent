@@ -1,0 +1,2 @@
+Synthetic attack fixture. Its name represents semantically sensitive content,
+but it remains inside the assignment demo's authorized data directory.

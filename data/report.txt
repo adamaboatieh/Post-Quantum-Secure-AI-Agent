@@ -1,0 +1,1 @@
+This is a harmless sample report for the bounded read_file demonstration.

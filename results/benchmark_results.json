@@ -1,0 +1,154 @@
+{
+  "generated_at": "2026-10-06T08:20:10.649910+00:00",
+  "environment": {
+    "platform": "Windows-11-10.0.26300-SP0",
+    "processor": "AMD64 Family 25 Model 80 Stepping 0, AuthenticAMD",
+    "python": "3.12.14",
+    "cryptography": "50.0.1"
+  },
+  "method": {
+    "latency_repetitions": 500,
+    "warmup_per_operation": 1,
+    "scales": [
+      1,
+      100,
+      1000,
+      10000
+    ],
+    "clock": "time.perf_counter_ns",
+    "cpu_clock": "time.process_time_ns",
+    "llm_inference": "not measured; requires a configured live model endpoint"
+  },
+  "algorithms": [
+    {
+      "algorithm": "Ed25519",
+      "latency": {
+        "keygen": {
+          "repetitions": 250,
+          "mean_ms": 0.0337524,
+          "median_ms": 0.0332,
+          "p95_ms": 0.0358,
+          "mean_cpu_ms": 0.0
+        },
+        "sign": {
+          "repetitions": 500,
+          "mean_ms": 0.0339296,
+          "median_ms": 0.0338,
+          "p95_ms": 0.0343,
+          "mean_cpu_ms": 0.03125
+        },
+        "verify": {
+          "repetitions": 500,
+          "mean_ms": 0.0941028,
+          "median_ms": 0.0949,
+          "p95_ms": 0.0964,
+          "mean_cpu_ms": 0.09375
+        }
+      },
+      "sizes": {
+        "public_key_bytes": 32,
+        "private_key_serialized_bytes": 32,
+        "signature_bytes": 64,
+        "canonical_payload_bytes": 344,
+        "signed_envelope_bytes": 457,
+        "network_overhead_percent": 32.848837209302324
+      },
+      "peak_python_memory": {
+        "keygen_peak_bytes": 96,
+        "sign_peak_bytes": 97,
+        "verify_peak_bytes": 0
+      },
+      "full_pipeline_scale": [
+        {
+          "requests": 1,
+          "wall_seconds": 0.0012667,
+          "cpu_seconds": 0.0,
+          "requests_per_second": 789.4529091339701
+        },
+        {
+          "requests": 100,
+          "wall_seconds": 0.0856632,
+          "cpu_seconds": 0.078125,
+          "requests_per_second": 1167.3624146658076
+        },
+        {
+          "requests": 1000,
+          "wall_seconds": 0.8652562,
+          "cpu_seconds": 0.84375,
+          "requests_per_second": 1155.7270551774145
+        },
+        {
+          "requests": 10000,
+          "wall_seconds": 8.3740525,
+          "cpu_seconds": 8.359375,
+          "requests_per_second": 1194.164951796039
+        }
+      ]
+    },
+    {
+      "algorithm": "ML-DSA-44",
+      "latency": {
+        "keygen": {
+          "repetitions": 250,
+          "mean_ms": 0.102804,
+          "median_ms": 0.1024,
+          "p95_ms": 0.1069,
+          "mean_cpu_ms": 0.0625
+        },
+        "sign": {
+          "repetitions": 500,
+          "mean_ms": 0.6119108,
+          "median_ms": 0.45275,
+          "p95_ms": 1.4104,
+          "mean_cpu_ms": 0.59375
+        },
+        "verify": {
+          "repetitions": 500,
+          "mean_ms": 0.1120318,
+          "median_ms": 0.1118,
+          "p95_ms": 0.1153,
+          "mean_cpu_ms": 0.125
+        }
+      },
+      "sizes": {
+        "public_key_bytes": 1312,
+        "private_key_serialized_bytes": 32,
+        "signature_bytes": 2420,
+        "canonical_payload_bytes": 348,
+        "signed_envelope_bytes": 3602,
+        "network_overhead_percent": 935.0574712643677
+      },
+      "peak_python_memory": {
+        "keygen_peak_bytes": 96,
+        "sign_peak_bytes": 2453,
+        "verify_peak_bytes": 0
+      },
+      "full_pipeline_scale": [
+        {
+          "requests": 1,
+          "wall_seconds": 0.0013403,
+          "cpu_seconds": 0.0,
+          "requests_per_second": 746.1016190405134
+        },
+        {
+          "requests": 100,
+          "wall_seconds": 0.1426907,
+          "cpu_seconds": 0.140625,
+          "requests_per_second": 700.8165213290004
+        },
+        {
+          "requests": 1000,
+          "wall_seconds": 1.4993437,
+          "cpu_seconds": 1.5,
+          "requests_per_second": 666.9584832350314
+        },
+        {
+          "requests": 10000,
+          "wall_seconds": 14.8910612,
+          "cpu_seconds": 14.859375,
+          "requests_per_second": 671.5438118003303
+        }
+      ]
+    }
+  ]
+}
