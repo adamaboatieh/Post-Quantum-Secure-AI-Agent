@@ -121,6 +121,13 @@ def run_demo(
 
 
 def main() -> None:
+    try:
+        from dotenv import load_dotenv
+
+        load_dotenv()
+    except ImportError:
+        pass
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("task", nargs="?", default="Read report.txt and summarize it.")
     parser.add_argument("--algorithm", choices=("ed25519", "ml-dsa"), default=None)
