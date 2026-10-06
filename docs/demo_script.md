@@ -7,11 +7,11 @@ unnecessary.
 
 ## Prepare before the talk
 
-Use the already working Windows runtime:
+Open PowerShell in the repository root and use the project virtual environment:
 
 ```powershell
 Set-Location "C:\Users\ADAM\Desktop\Post-Quantum-Secure-AI-Agent"
-$pqsaPython = "C:\Users\ADAM\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe"
+$pqsaPython = Join-Path (Get-Location) ".venv\Scripts\python.exe"
 $env:PYTHONPATH = Join-Path (Get-Location) "src"
 ```
 
@@ -27,8 +27,8 @@ Get-Content -LiteralPath .env | ForEach-Object {
 }
 ```
 
-The provider receives the task and bounded file contents. Use the existing
-approved demonstration data; do not replace the user's `data/report.txt`.
+The provider receives the task and bounded file contents. Use only the
+approved demonstration data already stored under `data/`.
 Each normal live workflow uses two API calls. Have the offline commands ready
 in case provider access is unavailable, and label their preview accurately.
 

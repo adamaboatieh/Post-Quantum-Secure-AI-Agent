@@ -208,30 +208,27 @@ identity-binding consistency, and independently retained public-key fingerprint
 pins for both records. They did not execute either tool again, and no summary
 or file text was retained in the audit database.
 
-## Closeout validation
+## Validation summary
 
-Both independent staged validation and final discovery in the actual target
-repository passed all 83 tests. The target run completed in 3.675 seconds
-with no failures or skips. The
-deterministic seven-scenario attack suite also passed in both algorithms,
-including replay, tampering, expiry, unauthorized-tool rejection, and the
-accepted policy-valid action that demonstrates the semantic-safety limit.
+The final repository test suite passed all 83 tests in 3.675 seconds with no
+failures or skips. The deterministic seven-scenario attack suite also passed
+with both signature algorithms, including replay, tampering, expiry,
+unauthorized-tool rejection, and the policy-valid signed action that
+demonstrates the semantic-safety limit.
+
 Actual audited Gemini workflows and separate-process historical verification
-were rehearsed as described above.
+passed as described above. Historical verification checked signature validity,
+identity binding, and independently retained public-key fingerprints without
+re-executing tools.
 
-The ten-slide submission presentation passed package, layout, font, native
-table/chart, embedded-workbook, and reimport checks. Every slide was rendered
-and visually inspected at full size. Its one table, two native charts, and two
-original embedded workbooks remain editable; the original chart/workbook part
-bytes were preserved. The superseded deck was removed at the user's request;
-only the submission presentation is distributed. Native PowerPoint application opening and
-a human timed talk have not been recorded.
+The ten-slide presentation artifact passed package, layout, font, native
+table/chart, embedded-workbook, render, and reimport checks. Every slide was
+visually inspected at full size. Its native table, charts, and embedded
+workbooks remain editable.
 
-Technical assignment deliverables are complete. A human timed rehearsal remains.
-Publication of `feat/assignment-rebuild` is authorized without merging; the
-observed commit and remote result are reported in the publication handoff.
-See [Submission Checklist](submission_checklist.md) for the exact file manifest
-and final checks.
+The technical assignment deliverables are complete. See
+[Submission Checklist](submission_checklist.md) for the final evidence map and
+repository validation summary.
 
 ## Reproducibility artifacts
 
