@@ -17,6 +17,7 @@ or safety after key or policy compromise.
 - the binding between key ID, agent ID, algorithm, and public key;
 - authorization policy and `data/` root;
 - action payloads, tool results, and replay records;
+- retained signed requests and their historical public-key bindings;
 - evidence used for the research conclusions.
 
 ## Adversary capabilities
@@ -48,7 +49,9 @@ trusted policy, trusted key registry, running verifier, or replay database.
 | Path escape | Restricted relative `.txt` path plus containment checks | Denied | Hostile concurrent filesystem mutation is not fully eliminated |
 | Prompt injection | Strict proposal schema and independent policy | Known forbidden request blocked | Policy-valid harmful actions remain possible |
 | Signed malicious action | No cryptographic prevention | Accepted if valid and authorized | Requires better semantic policy, approvals, or human review |
-| Log modification | None beyond ordinary filesystem controls | Not detected | Logs are not tamper-evident |
+| Retained request alteration | Later canonical signature verification | Invalid signature if signed bytes change | Whole envelope/key replacement requires outside key trust to detect |
+| Historical key replacement | Optional independently saved public-key fingerprint | Pin mismatch | A pin does not authenticate execution outcomes or record completeness |
+| Log/outcome modification or deletion | Ordinary filesystem controls only | Not cryptographically detected | Audit database and outcomes are not tamper-evident |
 
 ## Authentication is not authorization
 
@@ -65,6 +68,26 @@ signature exists: it may influence the model's proposal. Schema validation can
 reject malformed output and policy can reject known forbidden capabilities, but
 a manipulated proposal can still be valid under both. The signed
 `confidential.txt` experiment intentionally succeeds to demonstrate this limit.
+That seven-case suite uses the deterministic proposal adapter. The separate
+live Gemini injection runner measures selected prompts and file-content cases;
+its observed outcomes are recorded in [Experimental Results](results.md).
+Neither a valid signature nor a handful of model responses establishes general
+prompt-injection immunity. Summary content remains display-only even if an
+injection influences its wording.
+
+## Historical verification boundary
+
+Audit retains signed envelopes with the public key and identity binding resolved
+by the verifier. Private keys, credentials, model messages, and returned file
+text are excluded, but signed action metadata such as paths is retained. A
+new process can recheck a request signature after the ephemeral private key is
+gone; this does not execute the tool again or treat an old request as fresh.
+
+Without an independently trusted key fingerprint, a retained signature proves
+validity under the key stored beside it only. An attacker who can modify the
+database can replace a complete envelope/key pair, change unsigned execution
+states, or delete records. The basic audit feature does not establish an
+immutable timeline, complete log, external identity, or proof of tool outcomes.
 
 ## Private-key compromise
 

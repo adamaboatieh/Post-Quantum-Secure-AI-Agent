@@ -1,1 +1,158 @@
-This is a harmless sample report for the bounded read_file demonstration.
+Post-Quantum Secure AI Agent
+A focused research prototype that authenticates AI-agent tool actions with Ed25519 or ML-DSA-44, enforces independent authorization, rejects stale and replayed requests, and measures the operational cost of post-quantum authentication.
+
+Problem and research question
+An LLM can propose a tool action, but model output is untrusted. A receiving service needs a reliable way to determine that the exact request passed through a trusted signing boundary, was not modified, is fresh, and is permitted.
+
+Is post-quantum cryptographic authentication practical for securing AI-agent actions today, and what operational trade-offs does it introduce?
+
+This repository answers that question with one deliberately small action: read_file for bounded UTF-8 .txt files beneath data/. It is the assignment prototype, not the future Secure Agent Action Gateway product.
+
+Architecture
+User
+  -> untrusted proposal model
+  -> strict structured proposal validation
+  -> trusted authorization policy
+  -> trusted signer (Ed25519 or ML-DSA-44)
+  -> signed action envelope
+  -> tool service
+  -> signature + freshness + replay + authorization checks
+  -> execute or reject
+The LLM/model adapter never receives the private key. The trusted signing service owns key use. The tool service resolves verification keys from its own registry and independently applies authorization after signature verification. See Architecture and Threat Model.
+
+Why signatures instead of encryption
+Encryption protects confidentiality. It does not, by itself, prove which agent approved a request or whether the request was modified. Digital signatures bind a private key to exact canonical request bytes, providing integrity and origin authentication under the stated key-management assumptions. Payloads in this prototype remain readable; use authenticated encryption or TLS separately when confidentiality is required.
+
+Signature algorithms and agility
+Ed25519 is the compact classical baseline: 32-byte public key and 64-byte signature in this implementation. It is not post-quantum secure.
+ML-DSA-44 is the FIPS 204 post-quantum signature mode: 1,312-byte public key and 2,420-byte signature. The implementation uses the maintained cryptography library and does not implement cryptographic mathematics.
+Both implement the interfaces in src/signing/base.py, sign the same canonical payload, and pass the same security suite. Choose a mode with --algorithm ed25519|ml-dsa or SIGNATURE_SCHEME.
+
+Signed action envelope
+The signature covers canonical, domain-separated bytes containing:
+
+protocol and audience;
+algorithm, agent ID, and trusted key ID;
+UUID request ID and a random nonce;
+issue and expiry timestamps;
+tool name and arguments.
+Objects use sorted compact UTF-8 JSON. Floating-point values are forbidden in the signed profile to avoid number-format ambiguity. The signature remains outside the payload.
+
+Authorization, freshness, and replay protection
+Authentication and authorization are separate. Even a correctly signed delete_database request is denied because the assignment policy permits only read_file. The server owns the allowed data/ root and rejects absolute paths, traversal, Windows drive/device forms, links/reparse points, hard links, non-regular files, oversized files, and invalid UTF-8.
+
+Freshness uses issued_at, expires_at, a 60-second maximum lifetime, and limited clock skew. SQLite atomically claims both request ID and nonce, so a captured valid request cannot be accepted twice while replay state is retained.
+
+Prompt-injection limitation
+Cryptography does not solve prompt injection. An injected prompt can influence the proposal before it is signed. Strict schema validation and policy can block known forbidden outputs, but a manipulated action that remains policy-valid can still be signed and executed. The seventh attack demonstrates this by accepting a validly signed read of the synthetic confidential.txt fixture.
+
+Current status
+Area	Status
+Ed25519 generation, signing, verification	Implemented and tested
+ML-DSA-44 generation, signing, verification	Implemented and tested
+Canonical signed envelope	Implemented and tested
+Freshness, request-ID and nonce replay checks	Implemented and tested
+Independent authorization and bounded read_file	Implemented and tested
+Natural-language proposal layer	Deterministic offline demo implemented
+Optional live LLM adapter	Wired; requires endpoint/model/key and was not exercised here
+Seven required attack scenarios	Implemented in both modes
+Benchmark scales through 10,000 requests	Measured on this host
+Live LLM inference benchmark	Not measured; no configured live endpoint
+15-minute presentation and demo plan	Provided in docs/demo_script.md
+The deterministic backend is intentionally reproducible; it exercises the same untrusted-output boundary but is not represented as a live LLM. The optional OpenAI-compatible chat-completions adapter returns untrusted JSON that passes through the same parser, policy, signer, and server.
+
+Quick start
+Requirements: Python 3.11+ and a platform where cryptography 50 exposes ML-DSA-44.
+
+Set-Location C:\Users\ADAM\Desktop\Post-Quantum-Secure-AI-Agent
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e .
+Run the complete offline demo with both algorithms:
+
+.\.venv\Scripts\pqsa-demo.exe "Read report.txt and summarize it." --algorithm ed25519
+.\.venv\Scripts\pqsa-demo.exe "Read report.txt and summarize it." --algorithm ml-dsa
+The output shows the natural-language task, strict proposal, selected signature algorithm, request ID, server result, and a compact summary. Private keys are generated in memory for the demo and are never exposed to the model backend.
+
+Tests and attacks
+The suite uses the standard library test runner, so no additional test package is required:
+
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+.\.venv\Scripts\python.exe -m attacks.run_attacks --algorithm both
+Coverage includes valid and invalid signatures, changed messages, incorrect public keys, malformed model output, expired and future requests, replay, unauthorized actions, HTTP execution, both algorithm modes, and all seven assignment attacks:
+
+message tampering;
+signature forgery;
+replay;
+expired request;
+unauthorized action;
+prompt injection;
+signed malicious-but-valid action.
+Benchmark methodology and results
+Regenerate the committed research artifacts:
+
+.\.venv\Scripts\python.exe -m benchmarks.run_benchmarks --repetitions 500 --scales 1,100,1000,10000
+The 6 October 2026 run used Python 3.12.14, cryptography 50.0.1, and an AMD64 Family 25 Model 80 processor on Windows 11.
+
+Metric	Ed25519	ML-DSA-44
+Keygen median	0.0332 ms	0.1024 ms
+Sign median	0.0338 ms	0.4528 ms
+Sign p95	0.0343 ms	1.4104 ms
+Verify median	0.0949 ms	0.1118 ms
+Verify p95	0.0964 ms	0.1153 ms
+Public key	32 B	1,312 B
+Signature	64 B	2,420 B
+Signed envelope	457 B	3,602 B
+10,000-request throughput	1,194.16 req/s	671.54 req/s
+ML-DSA-44 was fast enough for this interactive prototype, but its signature and envelope were much larger. Live LLM inference was not measured because no model endpoint was configured; the project does not substitute an assumed latency. See Experimental Results, benchmark_results.json, and the generated charts in results/.
+
+Optional live-model demonstration
+Use a compatible chat-completions endpoint that supports JSON object output:
+
+$env:PQSA_LLM_URL = "https://your-provider.example/v1/chat/completions"
+$env:PQSA_LLM_MODEL = "your-model"
+$env:PQSA_LLM_API_KEY = "your-key"
+.\.venv\Scripts\pqsa-demo.exe "Read report.txt and summarize it." --backend live --algorithm ml-dsa
+Do not commit .env, API keys, or private keys. A provider response is never trusted simply because it came from an LLM API.
+
+Known limitations
+The default demonstration is a deterministic proposal model, not a live LLM.
+The local HTTP adapter has no TLS; production transport must be authenticated and encrypted.
+Replay state is single-host SQLite and does not provide distributed exactly-once execution.
+The response is not signed, and logs are not tamper-evident.
+Canonicalization is a restricted Python profile, not full RFC 8785.
+Filesystem containment narrows but does not eliminate hostile concurrent mutation risk; the trusted data directory needs OS protection.
+Python-visible memory measurements do not include every native allocation.
+Cryptographic authentication does not prevent prompt injection, malicious model choices, compromised policy, or stolen keys.
+Production recommendations
+Use an HSM, cloud KMS, TPM-backed service, or isolated signer; implement key rotation and revocation; add TLS and response authentication; use durable distributed replay state and idempotent execution; protect policy and data with OS permissions; add tamper-evident audit; risk-tier actions; require approval for high-impact operations; test the selected live model against prompt and tool-content injection; and independently review the complete system.
+
+Project structure
+src/
+  agent/       untrusted proposal adapters, strict schema, orchestration
+  policy/      trusted assignment authorization
+  signing/     base.py, ed25519.py, ml_dsa.py, canonical envelope signer
+  tools/       bounded read_file implementation
+  server/      verifier, freshness, replay, authorization, HTTP adapter
+tests/         algorithm-parity, security, agent, HTTP, attack, benchmark tests
+benchmarks/    reproducible latency, size, throughput, CPU, memory measurements
+attacks/       seven adversarial experiments
+results/       JSON, CSV, and SVG evidence
+presentation/  validated 10-slide PowerPoint deck with editable charts
+docs/
+  crypto_research.md
+  threat_model.md
+  architecture.md
+  security_analysis.md
+  results.md
+  demo_script.md
+data/          harmless demonstration fixtures
+README.md
+pyproject.toml
+Deeper documentation
+Cryptography Research
+Threat Model
+Architecture
+Security Analysis
+Experimental Results
+Presentation and Live Demo Script
+Final PowerPoint Deck
